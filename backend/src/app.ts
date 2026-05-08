@@ -1,0 +1,30 @@
+import Fastify from 'fastify';
+import prismaPlugin from './plugins/prisma.js';
+import authPlugin from './plugins/auth.js';
+import { authRoutes } from './modules/auth/routes.js';
+import { teamsRoutes } from './modules/teams/routes.js';
+import { projectsRoutes } from './modules/projects/routes.js';
+import { tasksRoutes } from './modules/tasks/routes.js';
+import { kanbanRoutes } from './modules/kanban/routes.js';
+import { ganttRoutes } from './modules/gantt/routes.js';
+import { dailyReportsRoutes } from './modules/dailyReports/routes.js';
+import { weeklyReportsRoutes } from './modules/weeklyReports/routes.js';
+import { dashboardRoutes } from './modules/dashboard/routes.js';
+import { usersRoutes } from './modules/users/routes.js';
+
+export const buildApp = () => {
+  const app = Fastify({ logger: true });
+  app.register(prismaPlugin);
+  app.register(authPlugin);
+  app.register(authRoutes, { prefix: '/api' });
+  app.register(teamsRoutes, { prefix: '/api' });
+  app.register(projectsRoutes, { prefix: '/api' });
+  app.register(tasksRoutes, { prefix: '/api' });
+  app.register(kanbanRoutes, { prefix: '/api' });
+  app.register(ganttRoutes, { prefix: '/api' });
+  app.register(dailyReportsRoutes, { prefix: '/api' });
+  app.register(weeklyReportsRoutes, { prefix: '/api' });
+  app.register(dashboardRoutes, { prefix: '/api' });
+  app.register(usersRoutes, { prefix: '/api' });
+  return app;
+};
