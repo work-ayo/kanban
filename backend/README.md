@@ -32,3 +32,7 @@ npm run dev
 ## REST API 문서
 서버 실행 후 아래 URL에서 Swagger UI 확인:
 - http://localhost:3000/api/docs
+
+## CORS
+프론트(Vite) 기본 주소(`http://localhost:5173`)는 CORS 허용되어 있습니다.
+다른 포트/도메인을 쓰면 `backend/src/plugins/cors.ts`의 allow 목록에 추가하세요.

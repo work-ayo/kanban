@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import prismaPlugin from './plugins/prisma.js';
 import authPlugin from './plugins/auth.js';
 import docsPlugin from './plugins/docs.js';
+import corsPlugin from './plugins/cors.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { teamsRoutes } from './modules/teams/routes.js';
 import { projectsRoutes } from './modules/projects/routes.js';
@@ -16,6 +17,7 @@ import { usersRoutes } from './modules/users/routes.js';
 export const buildApp = () => {
   const app = Fastify({ logger: true });
   app.register(docsPlugin);
+  app.register(corsPlugin);
   app.register(prismaPlugin);
   app.register(authPlugin);
   app.register(authRoutes, { prefix: '/api' });
