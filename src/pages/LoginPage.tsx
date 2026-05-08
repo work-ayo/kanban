@@ -9,14 +9,31 @@ export default function LoginPage() {
   const setUser = useAuthStore((s) => s.setUser);
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = await authApi.login({ loginId, password });
-    authStorage.setTokens(res.tokens.accessToken, res.tokens.refreshToken);
-    setUser(res.user);
-    navigate('/app/dashboard');
+    setError('');
+    try {
+      const res = await authApi.login({ loginId, password });
+      authStorage.setTokens(res.tokens.accessToken, res.tokens.refreshToken);
+      setUser(res.user);
+      navigate('/app/dashboard');
+    } catch {
+      setError('로그인 실패: 아이디/비밀번호 확인');
+    }
   };
 
-  return <form onSubmit={onSubmit}><h1>Login</h1><input value={loginId} onChange={(e)=>setLoginId(e.target.value)} placeholder='loginId'/><input type='password' value={password} onChange={(e)=>setPassword(e.target.value)} placeholder='password'/><button type='submit'>Login</button></form>;
+  return (
+    <form className='auth-form' onSubmit={onSubmit}>
+      <h1>로그인</h1>
+      <p className='auth-subtitle'>업무관리 시스템에 접속합니다.</p>
+      {error && <p className='auth-error'>{error}</p>}
+      <label>아이디</label>
+      <input value={loginId} onChange={(e) => setLoginId(e.target.value)} placeholder='admin01' />
+      <label>비밀번호</label>
+      <input type='password' value={password} onChange={(e) => setPassword(e.target.value)} placeholder='••••••••' />
+      <button type='submit'>Login</button>
+    </form>
+  );
 }

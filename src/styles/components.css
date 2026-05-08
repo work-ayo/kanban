@@ -1,1 +1,11 @@
-section,.auth-card{box-shadow:0 2px 8px rgba(0,0,0,.05)}section{background:#fff;border-radius:10px;padding:16px}
+section,.auth-card{box-shadow:0 2px 8px rgba(0,0,0,.05)}
+section{background:#fff;border-radius:10px;padding:16px}
+.auth-form{display:flex;flex-direction:column;gap:8px}
+.auth-form input{height:38px;border:1px solid #d0d7e2;border-radius:8px;padding:0 10px}
+.auth-form button{height:40px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer}
+.auth-subtitle{color:#64748b;margin:0 0 8px}
+.auth-error{color:#dc2626;background:#fee2e2;border-radius:8px;padding:8px}
+.tag-row{display:flex;gap:8px;margin:6px 0 10px}
+.tag{font-size:12px;padding:4px 8px;border-radius:999px}
+.tag-blue{background:#dbeafe;color:#1d4ed8}
+.tag-gray{background:#e5e7eb;color:#374151}
