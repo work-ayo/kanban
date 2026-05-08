@@ -3,10 +3,28 @@ import { authService } from './service.js';
 import { loginBodySchema, refreshBodySchema, registerBodySchema } from './schema.js';
 import { hashToken } from '../../utils/tokens.js';
 
+const registerJsonSchema = {
+  type: 'object',
+  required: ['loginId', 'password', 'name'],
+  properties: {
+    loginId: { type: 'string', example: 'admin01' },
+    password: { type: 'string', example: 'password1234' },
+    name: { type: 'string', example: '홍길동' },
+    department: { type: 'string', example: '개발팀' },
+  },
+};
+
 export const authRoutes: FastifyPluginAsync = async (app) => {
   const service = authService(app);
 
-  app.post('/auth/register', async (req, reply) => {
+  app.post('/auth/register', {
+    schema: {
+      tags: ['Auth'],
+      summary: '회원가입',
+      body: registerJsonSchema,
+      response: { 200: { type: 'object', properties: { userId: { type: 'string' } } } },
+    },
+  }, async (req, reply) => {
     const parsed = registerBodySchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send(parsed.error.flatten());
     try {
@@ -17,7 +35,12 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     }
   });
 
-  app.post('/auth/login', async (req, reply) => {
+  app.post('/auth/login', {
+    schema: {
+      tags: ['Auth'],
+      body: { type: 'object', required: ['loginId', 'password'], properties: { loginId: { type: 'string', example: 'admin01' }, password: { type: 'string', example: 'password1234' } } },
+    },
+  }, async (req, reply) => {
     const parsed = loginBodySchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send(parsed.error.flatten());
     try {
@@ -29,7 +52,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     }
   });
 
-  app.post('/auth/refresh', async (req, reply) => {
+  app.post('/auth/refresh', { schema: { tags: ['Auth'], body: { type: 'object', required: ['refreshToken'], properties: { refreshToken: { type: 'string' } } } } }, async (req, reply) => {
     const parsed = refreshBodySchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send(parsed.error.flatten());
     const rt = await app.prisma.refreshToken.findFirst({ where: { tokenHash: hashToken(parsed.data.refreshToken), revokedAt: null } });
@@ -38,11 +61,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     return { tokens: { accessToken, refreshToken: parsed.data.refreshToken } };
   });
 
-  app.post('/auth/logout', async (req: any) => {
+  app.post('/auth/logout', { schema: { tags: ['Auth'], body: { type: 'object', required: ['refreshToken'], properties: { refreshToken: { type: 'string' } } } } }, async (req: any) => {
     const parsed = refreshBodySchema.parse(req.body);
     await app.prisma.refreshToken.updateMany({ where: { tokenHash: hashToken(parsed.refreshToken) }, data: { revokedAt: new Date() } });
     return { ok: true };
   });
 
-  app.get('/auth/me', { preHandler: [app.requireAuth] }, async (req: any) => app.prisma.user.findUnique({ where: { userId: req.user.userId } }));
+  app.get('/auth/me', { schema: { tags: ['Auth'] }, preHandler: [app.requireAuth] }, async (req: any) => app.prisma.user.findUnique({ where: { userId: req.user.userId } }));
 };
