@@ -1,1 +1,6 @@
-.kanban{display:flex;gap:12px}
+.kanban-wrap{display:flex;gap:12px;overflow:auto;padding:6px}
+.k-col{min-width:270px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:12px;padding:10px}
+.k-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.k-cards{min-height:120px;display:flex;flex-direction:column;gap:8px}
+.k-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;cursor:grab}
+.k-card h4{margin:0;font-size:14px}.k-card p{margin:0;color:#475569;font-size:13px}.k-card small{color:#64748b}
