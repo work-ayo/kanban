@@ -1,33 +1,234 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum GlobalRole { ADMIN USER }
-enum TeamRole { LEADER MEMBER }
-enum TaskStatus { TODO IN_PROGRESS DONE HOLD }
-enum TaskPriority { LOW MEDIUM HIGH URGENT }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GlobalRole {
+  ADMIN
+  USER
+}
+
+enum TeamRole {
+  LEADER
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  HOLD
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
 
 model User {
-  userId String @id @default(cuid())
-  loginId String @unique
-  passwordHash String
-  name String
-  department String?
-  globalRole GlobalRole @default(USER)
-  isActive Boolean @default(true)
-  lastLoginAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  teamMembers TeamMember[]
+  userId        String         @id @default(cuid())
+  loginId       String         @unique
+  passwordHash  String
+  name          String
+  department    String?
+  globalRole    GlobalRole     @default(USER)
+  isActive      Boolean        @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  teamMembers   TeamMember[]
   refreshTokens RefreshToken[]
 }
-model Team { teamId String @id @default(cuid()) name String joinCode String @unique createdByUserId String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt members TeamMember[] projects Project[] boards Board[] dailyReports DailyReport[] weeklyReports WeeklyReport[] tasks Task[] }
-model TeamMember { teamMemberId String @id @default(cuid()) teamId String userId String role TeamRole @default(MEMBER) joinedAt DateTime @default(now()) team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) user User @relation(fields:[userId],references:[userId],onDelete:Cascade) @@unique([teamId,userId]) }
-model Project { projectId String @id @default(cuid()) teamId String code String name String description String? colorCode String price BigInt @default(0) startDate DateTime? endDate DateTime? createdByUserId String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) tasks Task[] @@unique([teamId,code]) @@unique([teamId,name]) }
-model Task { taskId String @id @default(cuid()) teamId String projectId String? parentTaskId String? title String description String? startDate DateTime? endDate DateTime? progress Int @default(0) status TaskStatus @default(TODO) priority TaskPriority @default(MEDIUM) estimatedMinutes Int @default(0) createdByUserId String? assignedUserId String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) project Project? @relation(fields:[projectId],references:[projectId],onDelete:SetNull) parentTask Task? @relation("TaskHierarchy",fields:[parentTaskId],references:[taskId],onDelete:SetNull) children Task[] @relation("TaskHierarchy") cards Card[] dailyReportEntries DailyReportEntry[] }
-model Board { boardId String @id @default(cuid()) teamId String name String createdByUserId String createdAt DateTime @default(now()) updatedAt DateTime @updatedAt team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) columns Column[] cards Card[] @@unique([teamId,name]) }
-model Column { columnId String @id @default(cuid()) boardId String name String order Int createdAt DateTime @default(now()) updatedAt DateTime @updatedAt board Board @relation(fields:[boardId],references:[boardId],onDelete:Cascade) cards Card[] @@unique([boardId,order]) @@unique([boardId,name]) }
-model Card { cardId String @id @default(cuid()) boardId String columnId String taskId String? title String content String? dueDate DateTime? order Int createdByUserId String createdAt DateTime @default(now()) updatedAt DateTime @updatedAt board Board @relation(fields:[boardId],references:[boardId],onDelete:Cascade) column Column @relation(fields:[columnId],references:[columnId],onDelete:Cascade) task Task? @relation(fields:[taskId],references:[taskId],onDelete:SetNull) @@unique([columnId,order]) }
-model DailyReport { dailyReportId String @id @default(cuid()) teamId String userId String workDate DateTime summary String? issue String? plan String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) entries DailyReportEntry[] @@unique([teamId,userId,workDate]) }
-model DailyReportEntry { entryId String @id @default(cuid()) dailyReportId String taskId String? startTime DateTime endTime DateTime? title String content String? minutes Int @default(0) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt dailyReport DailyReport @relation(fields:[dailyReportId],references:[dailyReportId],onDelete:Cascade) task Task? @relation(fields:[taskId],references:[taskId],onDelete:SetNull) }
-model WeeklyReport { weeklyReportId String @id @default(cuid()) teamId String userId String weekStart DateTime thisWeek String nextWeek String issue String? solution String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt team Team @relation(fields:[teamId],references:[teamId],onDelete:Cascade) @@unique([teamId,userId,weekStart]) }
-model RefreshToken { refreshTokenId String @id @default(cuid()) userId String tokenHash String expiresAt DateTime revokedAt DateTime? replacedById String? createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[userId],onDelete:Cascade) }
+
+model Team {
+  teamId          String         @id @default(cuid())
+  name            String
+  joinCode        String         @unique
+  createdByUserId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  members         TeamMember[]
+  projects        Project[]
+  boards          Board[]
+  dailyReports    DailyReport[]
+  weeklyReports   WeeklyReport[]
+  tasks           Task[]
+}
+
+model TeamMember {
+  teamMemberId String   @id @default(cuid())
+  teamId       String
+  userId       String
+  role         TeamRole @default(MEMBER)
+  joinedAt     DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Project {
+  projectId        String    @id @default(cuid())
+  teamId           String
+  code             String
+  name             String
+  description      String?
+  colorCode        String
+  price            BigInt    @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  createdByUserId  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  team  Team   @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  tasks Task[]
+
+  @@unique([teamId, code])
+  @@unique([teamId, name])
+}
+
+model Task {
+  taskId            String       @id @default(cuid())
+  teamId            String
+  projectId         String?
+  parentTaskId      String?
+  title             String
+  description       String?
+  startDate         DateTime?
+  endDate           DateTime?
+  progress          Int          @default(0)
+  status            TaskStatus   @default(TODO)
+  priority          TaskPriority @default(MEDIUM)
+  estimatedMinutes  Int          @default(0)
+  createdByUserId   String?
+  assignedUserId    String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  team              Team              @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  project           Project?          @relation(fields: [projectId], references: [projectId], onDelete: SetNull)
+  parentTask        Task?             @relation("TaskHierarchy", fields: [parentTaskId], references: [taskId], onDelete: SetNull)
+  children          Task[]            @relation("TaskHierarchy")
+  cards             Card[]
+  dailyReportEntries DailyReportEntry[]
+}
+
+model Board {
+  boardId          String   @id @default(cuid())
+  teamId           String
+  name             String
+  createdByUserId  String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  team    Team     @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  columns Column[]
+  cards   Card[]
+
+  @@unique([teamId, name])
+}
+
+model Column {
+  columnId   String   @id @default(cuid())
+  boardId    String
+  name       String
+  order      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  board Board  @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  cards Card[]
+
+  @@unique([boardId, order])
+  @@unique([boardId, name])
+}
+
+model Card {
+  cardId          String   @id @default(cuid())
+  boardId         String
+  columnId        String
+  taskId          String?
+  title           String
+  content         String?
+  dueDate         DateTime?
+  order           Int
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  board  Board  @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  column Column @relation(fields: [columnId], references: [columnId], onDelete: Cascade)
+  task   Task?  @relation(fields: [taskId], references: [taskId], onDelete: SetNull)
+
+  @@unique([columnId, order])
+}
+
+model DailyReport {
+  dailyReportId String   @id @default(cuid())
+  teamId        String
+  userId        String
+  workDate      DateTime
+  summary       String?
+  issue         String?
+  plan          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  team    Team               @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  entries DailyReportEntry[]
+
+  @@unique([teamId, userId, workDate])
+}
+
+model DailyReportEntry {
+  entryId        String   @id @default(cuid())
+  dailyReportId  String
+  taskId         String?
+  startTime      DateTime
+  endTime        DateTime?
+  title          String
+  content        String?
+  minutes        Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  dailyReport DailyReport @relation(fields: [dailyReportId], references: [dailyReportId], onDelete: Cascade)
+  task        Task?       @relation(fields: [taskId], references: [taskId], onDelete: SetNull)
+}
+
+model WeeklyReport {
+  weeklyReportId String   @id @default(cuid())
+  teamId         String
+  userId         String
+  weekStart      DateTime
+  thisWeek       String
+  nextWeek       String
+  issue          String?
+  solution       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+
+  @@unique([teamId, userId, weekStart])
+}
+
+model RefreshToken {
+  refreshTokenId String   @id @default(cuid())
+  userId         String
+  tokenHash      String
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  replacedById   String?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
