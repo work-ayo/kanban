@@ -21,6 +21,7 @@ export default function GanttPage() {
   const [selected, setSelected] = useState<Task | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [error, setError] = useState('');
+  const [savingTaskId, setSavingTaskId] = useState<string>('');
   const [newTask, setNewTask] = useState<DraftTask>({
     title: '',
     startDate: '',
@@ -43,6 +44,19 @@ export default function GanttPage() {
     if (!tasks.length) return new Date();
     return new Date(Math.min(...tasks.map((t) => new Date(t.startDate || Date.now()).getTime()), Date.now()));
   }, [tasks]);
+
+
+
+  const saveSchedule = async (task: Task) => {
+    setSavingTaskId(task.taskId);
+    await ganttApi.updateTaskSchedule(task.taskId, {
+      startDate: task.startDate,
+      endDate: task.endDate,
+      progress: Math.min(100, Math.max(0, task.progress || 0))
+    });
+    setSavingTaskId('');
+    await load();
+  };
 
   const onCreateTask = async () => {
     if (!teamId || !newTask.title.trim()) {
@@ -76,7 +90,7 @@ export default function GanttPage() {
       <div className='page-head'>
         <div>
           <h2>간트 차트</h2>
-          <p className='muted'>작업 일정을 한 화면에서 보고, 진행률과 날짜를 바로 수정하세요.</p>
+          <p className='muted'>작업 일정을 한 화면에서 보고, 진행률은 +10/-10 또는 슬라이더로 바로 업데이트할 수 있습니다.</p>
         </div>
         <button onClick={() => setOpenCreate(true)}>+ 작업 생성</button>
       </div>
@@ -113,6 +127,28 @@ export default function GanttPage() {
         </div>
       )}
 
+      <div className='panel-sub'>
+        <h3>빠른 진행률 업데이트</h3>
+        <table>
+          <thead><tr><th>작업</th><th>현재 진행률</th><th>조정</th><th>저장</th></tr></thead>
+          <tbody>
+            {tasks.map((task) => (
+              <tr key={`quick-${task.taskId}`}>
+                <td>{task.title}</td>
+                <td>{task.progress}%</td>
+                <td>
+                  <div className='inline'>
+                    <button onClick={() => setTasks((prev) => prev.map((p) => p.taskId === task.taskId ? { ...p, progress: Math.max(0, (p.progress || 0) - 10) } : p))}>-10%</button>
+                    <button onClick={() => setTasks((prev) => prev.map((p) => p.taskId === task.taskId ? { ...p, progress: Math.min(100, (p.progress || 0) + 10) } : p))}>+10%</button>
+                  </div>
+                </td>
+                <td><button onClick={() => saveSchedule(task)} disabled={savingTaskId === task.taskId}>{savingTaskId === task.taskId ? '저장 중...' : '저장'}</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {selected && (
         <div className='panel-sub'>
           <h3>{selected.title}</h3>
@@ -120,11 +156,17 @@ export default function GanttPage() {
             <input type='date' value={(selected.startDate || '').slice(0, 10)} onChange={(e) => setSelected({ ...selected, startDate: e.target.value })} />
             <input type='date' value={(selected.endDate || '').slice(0, 10)} onChange={(e) => setSelected({ ...selected, endDate: e.target.value })} />
             <input type='number' min={0} max={100} value={selected.progress || 0} onChange={(e) => setSelected({ ...selected, progress: Number(e.target.value) })} />
-            <button onClick={async () => {
-              await ganttApi.updateTaskSchedule(selected.taskId, { startDate: selected.startDate, endDate: selected.endDate, progress: selected.progress });
-              load();
-            }}>
-              일정 저장
+            <input
+              type='range'
+              min={0}
+              max={100}
+              value={selected.progress || 0}
+              onChange={(e) => setSelected({ ...selected, progress: Number(e.target.value) })}
+            />
+            <button onClick={() => setSelected({ ...selected, progress: Math.max(0, (selected.progress || 0) - 10) })}>-10%</button>
+            <button onClick={() => setSelected({ ...selected, progress: Math.min(100, (selected.progress || 0) + 10) })}>+10%</button>
+            <button onClick={() => saveSchedule(selected)} disabled={savingTaskId === selected.taskId}>
+              {savingTaskId === selected.taskId ? '저장 중...' : '일정 저장'}
             </button>
           </div>
         </div>
