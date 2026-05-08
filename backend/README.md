@@ -28,3 +28,7 @@ npm run dev
   - `.env` 파일이 없거나, `DATABASE_URL` 키가 비어있을 때 발생합니다.
 - `@prisma/client did not initialize yet`
   - `npm run prisma:generate`가 누락되었을 때 발생합니다.
+
+## REST API 문서
+서버 실행 후 아래 URL에서 Swagger UI 확인:
+- http://localhost:3000/api/docs
