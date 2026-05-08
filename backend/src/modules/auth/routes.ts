@@ -7,10 +7,10 @@ const registerJsonSchema = {
   type: 'object',
   required: ['loginId', 'password', 'name'],
   properties: {
-    loginId: { type: 'string', example: 'admin01' },
-    password: { type: 'string', example: 'password1234' },
-    name: { type: 'string', example: '홍길동' },
-    department: { type: 'string', example: '개발팀' },
+    loginId: { type: 'string' },
+    password: { type: 'string' },
+    name: { type: 'string' },
+    department: { type: 'string' },
   },
 };
 
@@ -38,7 +38,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   app.post('/auth/login', {
     schema: {
       tags: ['Auth'],
-      body: { type: 'object', required: ['loginId', 'password'], properties: { loginId: { type: 'string', example: 'admin01' }, password: { type: 'string', example: 'password1234' } } },
+      body: { type: 'object', required: ['loginId', 'password'], properties: { loginId: { type: 'string' }, password: { type: 'string' } } },
     },
   }, async (req, reply) => {
     const parsed = loginBodySchema.safeParse(req.body);
