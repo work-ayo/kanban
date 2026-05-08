@@ -1,2 +1,2 @@
-import { ReactNode } from 'react';
-export default function ConfirmDialog(props:{children?:ReactNode;[key:string]:any}){ return <div className='ui-confirmdialog' {...props}>{props.children ?? 'ConfirmDialog'}</div>; }
+import Modal from './Modal';
+export default function ConfirmDialog({ open, title, onConfirm, onClose }: any){return <Modal open={open} title={title} onClose={onClose}><div className='inline'><button onClick={onConfirm}>확인</button><button onClick={onClose}>취소</button></div></Modal>}
