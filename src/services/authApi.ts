@@ -1,0 +1,2 @@
+import { api } from '../lib/api'; import type { AuthResponse, LoginRequest, RegisterRequest, User } from '../types/auth';
+export const authApi={register:(p:RegisterRequest)=>api.post<AuthResponse>('/auth/register',p).then(r=>r.data),login:(p:LoginRequest)=>api.post<AuthResponse>('/auth/login',p).then(r=>r.data),me:()=>api.get<User>('/auth/me').then(r=>r.data),refresh:(refreshToken:string)=>api.post<{tokens:{accessToken:string;refreshToken:string}}>('/auth/refresh',{refreshToken}).then(r=>r.data),logout:(refreshToken:string)=>api.post('/auth/logout',{refreshToken})};

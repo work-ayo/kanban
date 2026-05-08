@@ -1,0 +1,2 @@
+import type { GanttTask } from './gantt';
+export interface DashboardSummary { totalProjects: number; inProgressTasks: number; doneTasks: number; delayedTasks: number; todayDailyReports: number; weeklyReportProgress: { submitted: number; total: number }; projectProgress: Array<{ projectId: string; projectName: string; progress: number }>; weeklyUserMinutes: Array<{ userId: string; userName: string; minutes: number }>; recentEntries: Array<{ entryId: string; title: string; minutes: number; taskTitle?: string }>; upcomingTasks: GanttTask[]; }
