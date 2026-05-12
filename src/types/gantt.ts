@@ -1,0 +1,2 @@
+import type { TaskPriority, TaskStatus } from './task';
+export interface GanttTask { taskId: string; parentTaskId?: string|null; title: string; projectId?: string|null; projectName?: string|null; startDate?: string|null; endDate?: string|null; progress: number; status: TaskStatus; priority: TaskPriority; assignedUserName?: string|null; estimatedMinutes: number; totalLoggedMinutes: number; children?: GanttTask[]; }

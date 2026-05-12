@@ -1,0 +1,2 @@
+import { FastifyPluginAsync } from 'fastify';
+export const ganttRoutes: FastifyPluginAsync = async (app)=>{ app.get('/gantt',async(req:any)=>app.prisma.task.findMany({where:{teamId:req.query.teamId,projectId:req.query.projectId||undefined},include:{project:true,dailyReportEntries:true}})); app.patch('/gantt/tasks/:taskId/schedule',async(req:any)=>app.prisma.task.update({where:{taskId:req.params.taskId},data:req.body})); };
